@@ -1,0 +1,4 @@
+datasette
+csvs-to-sqlite
+requests
+python-dotenv
