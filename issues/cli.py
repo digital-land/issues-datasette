@@ -1,7 +1,7 @@
-import csv
-import glob
 import os
+import subprocess
 import tempfile
+from pathlib import Path
 
 import click
 import requests
@@ -24,7 +24,8 @@ def load_issues():
         "S3_URL",
         "https://digital-land-production-collection-dataset.s3.eu-west-2.amazonaws.com",
     )
-    data_dir = f"{os.getcwd()}/data"
+    current_path = Path(os.path.realpath(__file__))
+    data_dir = f"{current_path.parent.parent}/data"
     with tempfile.TemporaryDirectory() as tmpdir:
 
         print("using datasette url", datasette_url)
@@ -42,43 +43,38 @@ def load_issues():
             dataset_csv_url = f"{collection_bucket}/dataset/{dataset}-issue.csv"
             download_dataset_issue_csv(tmpdir, dataset, dataset_csv_url)
 
-        merge_csvs(data_dir, tmpdir)
+        make_datasette_db(data_dir, tmpdir)
 
 
 def download_dataset_issue_csv(tmpdir, dataset, url):
-    print("down loading", url)
+    print("downloading", url)
     resp = requests.get(url)
     if resp.status_code == 200:
         csv_file = f"{tmpdir}/{dataset}-issue.csv"
         with open(csv_file, "w") as f:
             f.write(resp.text)
-    print(url, "downloaded")
+        message = f"{url} downloaded"
+    else:
+        message = f"{url} not downloaded"
+    return message
 
 
-def merge_csvs(data_dir, tmpdir):
-    fieldnames = [
-        "dataset",
-        "resource",
-        "line-number",
-        "entry-number",
-        "field",
-        "issue-type",
-        "value",
-    ]
-    merged_file = os.path.join(data_dir, "dataset-issue.csv")
-
-    with open(merged_file, "w") as outfile:
-        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for csv_file in glob.glob(f"{tmpdir}/*.csv"):
-            dataset = csv_file.split("/")[-1].split("-issue.csv")[0]
-            print("merging", csv_file, "for dataset", dataset)
-            with open(csv_file, "r") as infile:
-                reader = csv.DictReader(infile, fieldnames=fieldnames)
-                for row in reader:
-                    row["dataset"] = dataset
-                    writer.writerow(row)
-
+def make_datasette_db(data_dir, tmpdir):
+    print("making issue datasette database")
+    subprocess.run(
+        [
+            f"csvs-to-sqlite -i dataset,resource  {tmpdir}/*.csv {data_dir}/dataset-issue.sqlite3"
+        ],
+        shell=True,
+        check=True,
+    )
+    subprocess.run(
+        [
+            f"datasette inspect {data_dir}/dataset-issue.sqlite3 --inspect-file {data_dir}/dataset-issue.json"
+        ],
+        shell=True,
+        check=True,
+    )
     print("done")
 
 

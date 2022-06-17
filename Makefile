@@ -7,8 +7,6 @@ init::
 
 issue-db:
 	python -m issues.cli
-	csvs-to-sqlite -i dataset,resource  data/dataset-issue.csv data/dataset-issue.sqlite3
-	datasette inspect data/dataset-issue.sqlite3 --inspect-file data/dataset-issue.json
 
 black:
 	black .
