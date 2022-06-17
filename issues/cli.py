@@ -19,8 +19,11 @@ WHERE c.collection = d.collection;
 
 @click.command()
 def load_issues():
-    datasette_url = os.getenv("DATASETTE_URL")
-    s3_url = os.getenv("S3_URL")
+    datasette_url = os.getenv("DATASETTE_URL", "https://datasette.digital-land.info")
+    s3_url = os.getenv(
+        "S3_URL",
+        "https://digital-land-production-collection-dataset.s3.eu-west-2.amazonaws.com",
+    )
     data_dir = f"{os.getcwd()}/data"
     with tempfile.TemporaryDirectory() as tmpdir:
 
