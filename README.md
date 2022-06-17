@@ -1,4 +1,4 @@
-# Digital land pipeline issues datasette
+# Digital land issues datasette
 
 ## Getting started
 
