@@ -1,0 +1,36 @@
+name: Deploy to heroku
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: 0 6 * * *
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10
+      - name: Make issue database
+        run: |
+          make init
+          make issue-db
+      - name: Heroku container registry login
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:login
+      - name: Build and push
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:push web --app  digital-land-performance
+      - name: Release
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:release web --app  digital-land-issues

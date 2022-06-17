@@ -32,4 +32,4 @@ sync:
 	 python -m piptools sync requirements/requirements.txt requirements/dev-requirements.txt
 
 run:
-	datasette --inspect-file data/dataset-issue.json --immutable data/dataset-issue.sqlite3
+	datasette --inspect-file data/dataset-issue.json data/dataset-issue.sqlite3
