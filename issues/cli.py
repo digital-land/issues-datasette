@@ -63,7 +63,7 @@ def make_datasette_db(data_dir, tmpdir):
     print("making issue datasette database")
     subprocess.run(
         [
-            f"csvs-to-sqlite -i dataset,resource  {tmpdir}/*.csv {data_dir}/dataset-issue.sqlite3"
+            f"csvs-to-sqlite -i resource  {tmpdir}/*.csv {data_dir}/dataset-issue.sqlite3"
         ],
         shell=True,
         check=True,
